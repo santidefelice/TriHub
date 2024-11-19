@@ -1,0 +1,278 @@
+/* src/styles.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
+.header {
+  background-color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.header-left {
+  width: 200px;
+}
+
+.header-center {
+  width: 600px;
+  padding: 0 1rem;
+}
+
+.header-right {
+  width: 200px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.title {
+  color: #10b981;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.create-button {
+  background-color: #10b981;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.create-button:hover {
+  background-color: #059669;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 80px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Post List Styles */
+.post-list {
+  width: 600px;
+  padding: 0 1rem;
+}
+
+.sort-buttons {
+  padding: 1rem 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 64px;
+  z-index: 100;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #e5e7eb;
+}
+
+.button.active {
+  background-color: #10b981;
+  color: white;
+}
+
+.post-card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+  margin-bottom: 1rem;
+}
+
+.post-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.post-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.post-meta {
+  color: #666;
+  font-size: 0.875rem;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+/* Create Post Styles */
+.create-post-form {
+  width: 600px;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 1rem;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+}
+
+.form-textarea {
+  min-height: 200px;
+  resize: vertical;
+}
+
+/* Post Detail Styles */
+.post-detail {
+  width: 600px;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 1rem;
+}
+
+.post-content {
+  margin-bottom: 2rem;
+}
+
+.post-content h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.post-image {
+  width: 100%;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.primary-button {
+  background-color: #10b981;
+  color: white;
+}
+
+.edit-button {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.delete-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+.comments-section {
+  margin-top: 2rem;
+}
+
+.comments-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.comment {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.comment-form {
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+  }
+
+  .header-left {
+    width: auto;
+  }
+
+  .header-center {
+    width: auto;
+    padding: 0 0.5rem;
+  }
+
+  .header-right {
+    width: auto;
+  }
+
+  .post-list,
+  .create-post-form,
+  .post-detail {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 0.5rem;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
