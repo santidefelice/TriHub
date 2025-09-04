@@ -1,49 +1,51 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import { addComment, deletePost as apiDeletePost, fetchPostById, updatePost as apiUpdatePost, toggleUpvote } from "../lib/postsApi";
 
 const PostDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [comment, setComment] = useState('');
-    const [posts, setPosts] = useState(JSON.parse(localStorage.getItem('posts') || '[]'));
-    const post = posts.find(p => p.id === parseInt(id));
+    const [post, setPost] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [editedPost, setEditedPost] = useState(post);
+    const [editedPost, setEditedPost] = useState(null);
+
+    useEffect(() => {
+      (async () => {
+        const data = await fetchPostById(id, user?.id);
+        setPost(data);
+        setEditedPost({ title: data.title, content: data.content, image_url: data.image_url });
+      })();
+    }, [id, user?.id]);
+
+    if (!post) return <div>Loading...</div>;
   
-    if (!post) return <div>Post not found</div>;
-  
-    const handleUpvote = () => {
-      const updatedPosts = posts.map(p =>
-        p.id === post.id ? { ...p, upvotes: p.upvotes + 1 } : p
-      );
-      setPosts(updatedPosts);
-      localStorage.setItem('posts', JSON.stringify(updatedPosts));
+    const handleUpvote = async () => {
+      if (!user) return;
+      const result = await toggleUpvote(post.id, user.id);
+      const refreshed = await fetchPostById(id, user.id);
+      setPost(refreshed);
     };
   
-    const handleComment = (e) => {
+    const handleComment = async (e) => {
       e.preventDefault();
-      const updatedPosts = posts.map(p =>
-        p.id === post.id
-          ? { ...p, comments: [...p.comments, { id: Date.now(), text: comment }] }
-          : p
-      );
-      setPosts(updatedPosts);
-      localStorage.setItem('posts', JSON.stringify(updatedPosts));
+      await addComment(post.id, comment, user);
+      const refreshed = await fetchPostById(id, user?.id);
+      setPost(refreshed);
       setComment('');
     };
   
-    const handleDelete = () => {
-      const updatedPosts = posts.filter(p => p.id !== post.id);
-      localStorage.setItem('posts', JSON.stringify(updatedPosts));
+    const handleDelete = async () => {
+      await apiDeletePost(post.id);
       navigate('/');
     };
   
-    const handleEdit = () => {
-      const updatedPosts = posts.map(p =>
-        p.id === post.id ? editedPost : p
-      );
-      localStorage.setItem('posts', JSON.stringify(updatedPosts));
-      setPosts(updatedPosts);
+    const handleEdit = async () => {
+      await apiUpdatePost(post.id, editedPost);
+      const refreshed = await fetchPostById(id, user?.id);
+      setPost(refreshed);
       setIsEditing(false);
     };
   
@@ -64,8 +66,8 @@ const PostDetail = () => {
             />
             <input
               type="url"
-              value={editedPost.imageUrl}
-              onChange={(e) => setEditedPost({ ...editedPost, imageUrl: e.target.value })}
+              value={editedPost.image_url || ''}
+              onChange={(e) => setEditedPost({ ...editedPost, image_url: e.target.value })}
               className="form-input"
             />
             <div className="button-group">
@@ -76,20 +78,28 @@ const PostDetail = () => {
         ) : (
           <div className="post-content">
             <h1>{post.title}</h1>
-            {post.imageUrl && (
-              <img src={post.imageUrl} alt="Post" className="post-image" />
+            {post.image_url && (
+              <img src={post.image_url} alt="Post" className="post-image" />
             )}
             {post.content && <p className="post-text">{post.content}</p>}
             <div className="button-group">
-              <button onClick={handleUpvote} className="button primary-button">
-                Upvote ({post.upvotes})
+              <button 
+                onClick={handleUpvote} 
+                className={`button ${post.has_upvoted ? 'upvoted-button' : 'primary-button'}`}
+                disabled={!user}
+              >
+                {post.has_upvoted ? 'Upvoted' : 'Upvote'} ({post.upvotes})
               </button>
-              <button onClick={() => setIsEditing(true)} className="button edit-button">
-                Edit
-              </button>
-              <button onClick={handleDelete} className="button delete-button">
-                Delete
-              </button>
+              {user && user.id === post.author_id && (
+                <button onClick={() => setIsEditing(true)} className="button edit-button">
+                  Edit
+                </button>
+              )}
+              {user && user.id === post.author_id && (
+                <button onClick={handleDelete} className="button delete-button">
+                  Delete
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -103,12 +113,12 @@ const PostDetail = () => {
               placeholder="Leave a comment..."
               className="form-textarea"
             />
-            <button type="submit" className="button primary-button">Comment</button>
+            <button type="submit" className="button primary-button" disabled={!user}>Comment</button>
           </form>
           <div className="comments-list">
-            {post.comments.map(comment => (
-              <div key={comment.id} className="comment">
-                {comment.text}
+            {(post.comments || []).map(c => (
+              <div key={c.id} className="comment">
+                {c.text}
               </div>
             ))}
           </div>

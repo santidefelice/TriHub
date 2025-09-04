@@ -1,22 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import { createPost } from "../lib/postsApi";
 
 const CreatePost = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [post, setPost] = useState({ title: '', content: '', imageUrl: '' });
   
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
-      const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-      const newPost = {
-        ...post,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-        upvotes: 0,
-        comments: []
-      };
-      posts.push(newPost);
-      localStorage.setItem('posts', JSON.stringify(posts));
+      await createPost({ title: post.title, content: post.content, image_url: post.imageUrl }, user);
       navigate('/');
     };
   

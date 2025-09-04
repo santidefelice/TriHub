@@ -1,21 +1,24 @@
 // src/components/PostList.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchPosts } from '../lib/postsApi';
+import { useAuth } from '../AuthContext';
 
 const PostList = ({ searchTerm }) => {
   const [sortBy, setSortBy] = useState('newest');
-  const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+  const [posts, setPosts] = useState([]);
+  const { user } = useAuth();
 
-  const filteredPosts = posts.filter(post =>
-    post.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
-    if (sortBy === 'newest') {
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    }
-    return b.upvotes - a.upvotes;
-  });
+  useEffect(() => {
+    (async () => {
+      const data = await fetchPosts({ 
+        search: searchTerm, 
+        sort: sortBy === 'popular' ? 'popular' : 'newest',
+        userId: user?.id 
+      });
+      setPosts(data);
+    })();
+  }, [searchTerm, sortBy, user?.id]);
 
   return (
     <div className="post-list">
@@ -34,12 +37,12 @@ const PostList = ({ searchTerm }) => {
           Most Popular
         </button>
       </div>
-      {sortedPosts.map(post => (
+      {posts.map(post => (
         <Link key={post.id} to={`/post/${post.id}`} className="post-link">
           <div className="post-card">
             <h2>{post.title}</h2>
             <div className="post-meta">
-              <span>Posted {new Date(post.createdAt).toLocaleString()}</span>
+              <span>Posted {new Date(post.created_at).toLocaleString()}</span>
               <span>{post.upvotes} upvotes</span>
             </div>
           </div>
