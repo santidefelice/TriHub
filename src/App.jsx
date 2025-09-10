@@ -56,15 +56,12 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const AuthStatus = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   if (!user) return <Link to="/signin" className="create-button">Sign In</Link>;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <Link to="/profile" className="create-button" style={{ background: 'transparent', color: 'var(--accent-color)' }}>
-        Hi, {user.username}
-      </Link>
-      <button className="create-button" onClick={signOut}>Logout</button>
-    </div>
+    <Link to="/profile" className="create-button" style={{ background: 'transparent', color: 'var(--accent-color)' }}>
+      Hi, {user.username}
+    </Link>
   );
 };
 

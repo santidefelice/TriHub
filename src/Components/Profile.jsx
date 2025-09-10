@@ -3,7 +3,7 @@ import { useAuth } from '../AuthContext';
 import { fetchPosts } from '../lib/postsApi';
 
 const Profile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, signOut } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [biography, setBiography] = useState(user?.profile?.biography || '');
   const [userPosts, setUserPosts] = useState([]);
@@ -47,6 +47,11 @@ const Profile = () => {
         <div className="profile-info">
           <h2>Hi, {user.username}!</h2>
           <p className="profile-email">{user.email}</p>
+        </div>
+        <div className="profile-actions">
+          <button onClick={signOut} className="button delete-button">
+            Logout
+          </button>
         </div>
       </div>
 
