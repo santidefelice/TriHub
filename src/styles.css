@@ -365,9 +365,23 @@ body {
   border-left: 4px solid var(--accent-color);
 }
 
-.user-post-item h4 {
-  margin: 0 0 0.5rem 0;
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.post-header h4 {
+  margin: 0;
   color: var(--text-primary);
+  flex: 1;
+}
+
+.button.small {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
 }
 
 .user-post-item .post-meta {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { fetchPosts } from '../lib/postsApi';
+import { fetchPosts, deletePost } from '../lib/postsApi';
 
 const Profile = () => {
   const { user, updateProfile, signOut } = useAuth();
@@ -33,6 +33,18 @@ const Profile = () => {
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating biography:', error);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      try {
+        await deletePost(postId);
+        // Reload user posts after deletion
+        await loadUserPosts();
+      } catch (error) {
+        console.error('Error deleting post:', error);
+      }
     }
   };
 
@@ -106,7 +118,16 @@ const Profile = () => {
           <div className="user-posts-list">
             {userPosts.map(post => (
               <div key={post.id} className="user-post-item">
-                <h4>{post.title}</h4>
+                <div className="post-header">
+                  <h4>{post.title}</h4>
+                  <button 
+                    onClick={() => handleDeletePost(post.id)}
+                    className="button delete-button small"
+                    title="Delete post"
+                  >
+                    Delete
+                  </button>
+                </div>
                 <p className="post-meta">
                   Posted {new Date(post.created_at).toLocaleString()} • {post.upvotes} upvotes
                 </p>
