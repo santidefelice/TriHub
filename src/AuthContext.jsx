@@ -23,12 +23,16 @@ export const AuthProvider = ({ children }) => {
     };
     init();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('AuthContext: auth state change:', event, session?.user?.id);
       try {
         if (session?.user) {
+          console.log('AuthContext: getting user profile for:', session.user.id);
           const userWithProfile = await getUserWithProfile(session.user);
+          console.log('AuthContext: user profile loaded:', userWithProfile);
           setUser(userWithProfile);
         } else {
+          console.log('AuthContext: no session, setting user to null');
           setUser(null);
         }
       } catch (error) {
@@ -43,19 +47,36 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const getUserWithProfile = async (user) => {
+    console.log('getUserWithProfile: starting for user:', user.id);
     const username = user.email?.split('@')[0] || 'user';
     
     try {
       // Try to get existing profile, but don't use .single() to avoid 406 error
-      const { data: profiles, error } = await supabase
+      console.log('getUserWithProfile: fetching existing profile...');
+      
+      // Add timeout to prevent hanging
+      const profileQuery = supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id);
       
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+      );
+      
+      const { data: profiles, error } = await Promise.race([
+        profileQuery,
+        timeoutPromise
+      ]);
+      
+      console.log('getUserWithProfile: profile query result:', { profiles, error });
+      
       let profile = null;
       if (profiles && profiles.length > 0) {
+        console.log('getUserWithProfile: found existing profile');
         profile = profiles[0];
       } else {
+        console.log('getUserWithProfile: no existing profile, creating new one...');
         // Create profile if it doesn't exist
         try {
           const { data: newProfile, error: insertError } = await supabase
@@ -67,6 +88,8 @@ export const AuthProvider = ({ children }) => {
             })
             .select()
             .single();
+          
+          console.log('getUserWithProfile: profile creation result:', { newProfile, insertError });
           
           if (insertError) {
             console.error('Error creating profile:', insertError);
@@ -81,13 +104,22 @@ export const AuthProvider = ({ children }) => {
         }
       }
       
-      return {
+      const result = {
         ...user,
         username,
         profile: profile || { id: user.id, username, biography: '' }
       };
+      
+      console.log('getUserWithProfile: returning user with profile:', result);
+      return result;
     } catch (error) {
       console.error('Error in getUserWithProfile:', error);
+      
+      // If it's a timeout or profile table issue, just return user with default profile
+      if (error.message === 'Profile query timeout') {
+        console.log('getUserWithProfile: Profile query timed out, using default profile');
+      }
+      
       // Return user with default profile if anything fails
       return {
         ...user,
@@ -98,16 +130,25 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signInWithEmail = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    console.log('AuthContext: signInWithEmail called');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      console.error('AuthContext: signIn error:', error);
+      throw error;
+    }
+    console.log('AuthContext: signIn successful:', data);
+    return data; // ← Add this line
   };
-
+  
   const signUpWithEmail = async (email, password) => {
+    console.log('AuthContext: signUpWithEmail called');
     const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
-    
-    // Profile will be created automatically by the trigger
-    // No need to manually create it here
+    if (error) {
+      console.error('AuthContext: signUp error:', error);
+      throw error;
+    }
+    console.log('AuthContext: signUp successful:', data);
+    return data; // ← Add this line
   };
 
   const signInWithOtp = async (email) => {

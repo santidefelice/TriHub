@@ -30,19 +30,26 @@ const SignIn = () => {
     loadingRef.current = true;
     
     try {
-      console.log('Starting authentication...');
+      console.log('Starting authentication...', { email, isSignUp });
+      
+      let result;
       if (isSignUp) {
-        await signUpWithEmail(email, password);
-        console.log('Sign up completed');
+        console.log('Attempting sign up...');
+        result = await signUpWithEmail(email, password);
+        console.log('Sign up result:', result);
       } else {
-        await signInWithEmail(email, password);
-        console.log('Sign in completed');
+        console.log('Attempting sign in...');
+        result = await signInWithEmail(email, password);
+        console.log('Sign in result:', result);
       }
+      
+      console.log('Auth function completed, waiting for user state update...');
       
       // Add a timeout fallback in case user state doesn't update
       setTimeout(() => {
         if (loadingRef.current) {
-          console.log('Auth completed but user state not updated, navigating anyway');
+          console.log('Auth completed but user state not updated after 3s');
+          console.log('Current user state:', user);
           setLoading(false);
           loadingRef.current = false;
           navigate('/');
@@ -50,8 +57,13 @@ const SignIn = () => {
       }, 3000);
       
     } catch (err) {
-      console.error('Sign in error:', err);
-      setError(err.message);
+      console.error('Authentication error details:', {
+        message: err.message,
+        code: err.code,
+        status: err.status,
+        fullError: err
+      });
+      setError(err.message || 'Authentication failed');
       setLoading(false);
       loadingRef.current = false;
     }
@@ -85,6 +97,8 @@ const SignIn = () => {
           {error}
         </div>
       )}
+
+      
       
       <form onSubmit={handleSubmit}>
         <input
